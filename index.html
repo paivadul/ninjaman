@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>NinjaMan</title>
+
+<style> /*estilo*/
+            *{
+                padding: 0;
+                margin: 0;
+            }
+
+            .row{
+                line-height: 0;
+                font-size: 0;
+            }
+
+            .wall{
+                background-color: blue;
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+            }
+
+            .sushi{
+                background-color: rgb(0, 0, 0);
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+                background-image: url(img/sushi.png);
+                background-size: contain;
+            }
+
+            .blank{
+                background-color: rgb(0, 0, 0);
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+            }
+
+            .onigiri{
+                background-color: rgb(0, 0, 0);
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+                background-image: url(img/onigiri.png);
+                background-size: contain;
+            }
+
+            .ghost{
+                background-color: rgb(0, 0, 0);
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+                background-size: contain;
+                position: absolute;
+            }
+
+            #ninjaman{
+                background-color: rgb(0, 0, 0);
+                height: 40px;
+                width: 40px;
+                display: inline-block;
+                background-image: url(img/ninja.gif);
+                background-size: contain;
+                position: absolute;
+            }
+
+            #sushicount{
+                background-color: orange;
+                height: 40px;
+                width: 400px;
+                display: inline-block;
+                font-family: 'Courier New', Courier, monospace, black;
+            }
+</style>
+
+    </head>
+    <body>
+        <div id="world"></div>
+        <div id="ninjaman"></div>
+        <div class= 'ghost' id="bluey" style="background-image: url(img/bluey.gif);"></div>
+        <div class= 'ghost' id="pinky" style="background-image: url(img/pinky.gif);"></div>
+        <div class= 'ghost' id="pumpky" style="background-image: url(img/pumpky.gif);"></div>
+        <div class= 'ghost' id="red" style="background-image: url(img/red.gif);"></div>
+        <div id="sushicount"></div>
+
+<script type="text/javascript">
+            var world = [  //diagrama del mundo
+                [1,1,1,1,1,1,1,1,1,1], //10 de fila
+                [1,2,0,0,0,1,1,2,3,1],
+                [1,1,1,2,1,1,2,2,1,1],
+                [1,2,2,0,0,2,2,1,1,1],
+                [1,2,1,1,0,1,2,0,1,1],
+                [1,2,1,1,0,1,1,2,3,1],
+                [1,0,0,0,2,1,1,2,0,1],
+                [1,2,1,1,0,1,1,2,1,1],
+                [1,2,0,0,0,1,0,2,0,1],
+                [1,2,1,1,0,1,1,2,1,1],
+                [1,2,1,1,2,1,3,0,2,1],
+                [1,1,1,1,1,1,1,1,1,1],//12 de columna
+            ]
+            
+            var worldDict = { //diccionario del mundo
+                0: 'blank',
+                1: 'wall',
+                2: 'sushi',
+                3: 'onigiri'
+            }
+            
+            var ninjaman = { //posición del ninjaman. Es como un diagrama x,y
+                x: 2, //movimientos en horizontal (izquieda-derecha)
+                y: 6, //movimientos en vertical (arriba-abajo)
+            }
+
+            var ghosts = {
+                bluey: { x: 4, y: 8 },
+                pinky: { x: 2, y: 3 },
+                pumpky: { x: 6, y: 9 },
+                red: { x: 8, y: 5 }
+            };
+
+            var Allghosts = document.querySelectorAll('.ghost');
+
+            var sushicount = 0; //contador de sushi que el ninjaman va comiendo
+
+            var lives = 3;
+
+            function DrawWorld(){ //genera el mundo del juego
+                var output = '' //acá se van sumando los divs por cada lugar ubicado en el world y según el número que le toca irá su style
+
+                    for(var row = 0; row < world.length; row++){ 
+                    output += '<div class="row">';
+                    
+                        for(var x= 0; x < world[row].length; x++){
+                            output += "<div class= '" +worldDict[world[row][x]] + "'></div>";
+                        }
+                    output+='</div>';
+                    }
+
+                document.getElementById('world').innerHTML = output; //se manda a la pantalla
+            }
+
+            function SushiFinishes() { //cuando termina el sushi. Detecta si es verdadero o falso
+                for(var row = 0; row < world.length; row++){
+                    for(var col = 0; col < world.length; col++){
+                        if ( world[row][col] == 2 || world[row][col] == 3){
+                            return false;
+                        }
+                    }
+                }
+                return true;
+                }
+
+            function RandomWorld(){ //para reorganizar el mundo de manera aleatoria
+                for(var i = 0; i < world.length; i++){
+                    var row= [];
+                    for (var  a= 0; a < world[i].length; a++){
+                        world[i][a] = (Math.floor(Math.random() * 4));
+                    }
+                }
+                DrawWorld();
+                DrawNinjaman();       
+            }
+
+            window.onload = function () {
+                RandomWorld();
+                DrawWorld();
+                DrawNinjaman();
+                DrawGhost(); // Dibuja los fantasmas
+            };
+
+            function DrawNinjaman() { //para que el ninja se vea
+                document.getElementById('ninjaman').style.top= ninjaman.y * 40 + 'px' //(arriba-abajo)
+                document.getElementById('ninjaman').style.left= ninjaman.x * 40 + 'px'//(izquierda-derecha)
+                document.getElementById('sushicount').innerHTML = 'Sushi count: ' + sushicount; //contador de sushi
+            }
+
+            function DrawGhost() {
+                for (var ghost in ghosts) {
+                    var ghostElement = document.getElementById(ghost);
+                    ghostElement.style.top = ghosts[ghost].y * 40 + 'px';
+                    ghostElement.style.left = ghosts[ghost].x * 40 + 'px';
+                }
+            }
+
+
+            function moveGhost(ghost) {
+                var ghostElement = document.getElementById(ghost);
+                var ghostx = ghosts[ghost].x;
+                var ghosty = ghosts[ghost].y;
+
+                    function isAnotherGhost(x, y) {
+                        for (var otherGhost in ghosts) {
+                            if (otherGhost !== ghost && ghosts[otherGhost].x === x && ghosts[otherGhost].y === y) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+            
+                    function moveGhostTo(x, y) {
+                        if (world[y][x] !== 1 && !isAnotherGhost(x, y)) {
+                            ghosts[ghost].x = x;
+                            ghosts[ghost].y = y;
+                            ghostElement.style.left = x * 40 + 'px';
+                            ghostElement.style.top = y * 40 + 'px';
+                        }
+                    }
+
+                if (Math.abs(ninjaman.y - ghosty) > Math.abs(ninjaman.x - ghostx)) {
+                        if (ninjaman.y < ghosty) {
+                            moveGhostTo(ghostx, ghosty - 1);
+                        } else if (ninjaman.y > ghosty) {
+                            moveGhostTo(ghostx, ghosty + 1);
+                        }
+                    } else {
+                        if (ninjaman.x < ghostx) {
+                            moveGhostTo(ghostx - 1, ghosty);
+                        } else if (ninjaman.x > ghostx) {
+                            moveGhostTo(ghostx + 1, ghosty);
+                        }
+                    }
+                if (ninjaman.x === ghostx && ninjaman.y === ghosty){
+                    lives= lives - 1;
+                    if (lives <= 0){
+                        document.onkeydown = null;
+                        document.getElementById('sushicount').innerHTML = 'PERDISTE! Recarga la página para volver a jugar';
+                    }
+                }
+    }
+
+            function Booh() {
+                for (var ghost in ghosts) {
+                    moveGhost(ghost);
+                }
+            }
+
+            setInterval(Booh, 500);
+
+
+            document.onkeydown =  function(e){ //función que permite enlazar la instrucción requerida con el teclado de flechas
+                if (lives > 0) {
+                if(e.keyCode == 37){ //derecha
+                    if(world[ninjaman.y][ninjaman.x-1] != 1 ){ //si el lugar en que el ninja está no es igual a 1, se mueve a la derecha
+                        ninjaman.x--;
+                    }
+                }
+                if(e.keyCode == 38){ //arriba
+                    if(world[ninjaman.y-1][ninjaman.x] != 1 ){ //si el lugar en que el ninja está no es igual a 1, se mueve arriba
+                        ninjaman.y--;
+                    }
+                }
+                if(e.keyCode == 39){ //izquierda
+                    if(world[ninjaman.y][ninjaman.x+1] != 1 ){//si el lugar en que el ninja está no es igual a 1, se mueve a la izquierda
+                        ninjaman.x++;
+                    }
+                }
+                if(e.keyCode == 40){ //abajo
+                    if(world[ninjaman.y+1][ninjaman.x] != 1 ){//si el lugar en que el ninja está no es igual a 1, se mueve abajo
+                        ninjaman.y++;
+                    }
+                }
+
+                //condiciones para cambiar el diseño del world
+
+                if(world[ninjaman.y][ninjaman.x] == 2){  //si el ninja está en un 2, el count sumará 1 y será reemplazado por 0
+                    sushicount= sushicount + 1;
+                    world[ninjaman.y][ninjaman.x]=0;
+
+                } else if (world[ninjaman.y][ninjaman.x] == 3){ //si el ninja está en un 3, el count sumará 5, lanzará un mensaje temporal y será reemplazado por 0
+                    sushicount= sushicount + 5;
+                        setTimeout(function() { //función de mensaje temporal BONUS!
+                            document.getElementById('sushicount').innerHTML = 'ONIGIRI 5+ BONUS: ' + sushicount;
+                        }, 50);
+                    world[ninjaman.y][ninjaman.x]=0;
+                }
+            DrawWorld()    //llamado para mostrar el mundo actualizado del ninja con los nuevos valores modificados arriba
+            DrawNinjaman() //llamado para mostrar el lugar actualizado del ninja con los nuevos valores modificados arriba
+            
+            if(SushiFinishes() == true){
+                document.getElementById('sushicount').innerHTML = 'GANASTE!';
+            }
+
+            if(lives === 0){
+                document.onkeydown=null;
+                document.getElementById('sushicount').innerHTML='PERDISTE! Recarga la página para volver a jugar';
+            }
+            }
+        }
+</script>
+    </body>
+</html>
